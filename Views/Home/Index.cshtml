@@ -1,0 +1,163 @@
+﻿@model List<Product>
+@{
+    ViewData["Title"] = "Home Page";
+    int sn = 1;
+}
+
+<div class="text-center">
+    <h1>Kathmandu Store</h1>
+    <div class="d-flex justify-content-end mb-4">
+        <div class="d-flex" style="gap:10px">
+        <button class="btn btn-primary" id="addColumnBtn" onclick="addRow()">Add</button>
+        <button class="btn btn-danger d-none" id="bulkDeleteBtn">Delete All</button>
+        </div>
+    </div>
+<form id="productListForm"  method="post">
+  <table class="table" border="1">
+  <thead class="table-dark">
+    <th></th>
+    <th>Name</th>
+    <th>Type</th>
+    <th>Price</th>
+    <th>Action</th>
+  </thead>
+  <tbody id="tableBody">
+            @foreach(var item in Model)
+            {
+              <tr id="row_@sn">
+                <td>
+                      <input type="hidden" value="@sn" name="Product.index">
+                       <input type="hidden" name="Product[@sn].Id" value="@(item.Id)">
+                    <input type="checkbox" name="Product[@sn].isChecked" id="checkBox" class="form-check-input" onchange="showDeleteBtn()" />
+                </td>
+                <td>
+                    <input type="text" name="Product[@sn].Name" value= @(item.Name) />   
+                </td>
+                <td>
+                      <input type="text" name="Product[@sn].Type" value= @(item.Type) />  
+                </td>
+                  <td>
+                      <input type="text" name="Product[@sn].Price" value= @(item.price) />  
+                </td>
+                <td>
+                    <button class="btn btn-danger" onclick=deleteRow(@(sn))>Delete</button>
+                </td>
+              </tr>
+             <p class="d-none">@(sn++)</p>;
+            }
+  </tbody>
+</table>
+</form>
+<div class="d-flex justify-content-end mt-4">
+       <div class="d-flex" style="gap:10px">
+        @*<button class="btn btn-success" id="bluckAddBtn">Add New Products</button>*@
+        <button class="btn btn-warning" id="saveChangesBtn">Save Changes</button>
+       </div>
+</div>
+</div>
+<script>
+     var modelCount = parseInt(@Model.Count())+1;
+
+       document.getElementById("bulkDeleteBtn").addEventListener("click",(event)=>{
+         event.preventDefault(); 
+        const form = document.getElementById("productListForm");
+        const formAction = "@Url.Action("bulkDataDelete", "Home")";
+        form.action = formAction;
+        form.submit();
+    })
+
+    document.getElementById("saveChangesBtn").addEventListener("click",(event)=>{
+          event.preventDefault(); 
+        const form = document.getElementById("productListForm");
+        const formAction = "@Url.Action("bulkDataSave", "Home")";
+        form.action = formAction;
+        form.submit();
+    })
+
+    function showDeleteBtn(){
+    const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+        let count = 0 ;
+        for(let i = 0;i<checkboxes.length;i++){
+            if(checkboxes[i].checked){
+                checkboxes[i].value = true;
+                count++;
+            }
+            else{
+                checkboxes[i].value = false;
+            }
+        }
+        if(count > 0){
+        document.getElementById("bulkDeleteBtn").classList.add("d-block");
+        document.getElementById("bulkDeleteBtn").classList.remove("d-none");
+        }
+        else{
+        document.getElementById("bulkDeleteBtn").classList.remove("d-block");
+        document.getElementById("bulkDeleteBtn").classList.add("d-none");
+        }
+       
+    }
+        function addRow(){
+             var newRow = document.createElement("tr");
+             newRow.id = "row_"+modelCount;
+
+             //1
+             var noNameCell = document.createElement("td");
+             var indexInputCell = document.createElement("input");
+             indexInputCell.type = "hidden";
+             indexInputCell.name = "Product.index";
+             indexInputCell.value = modelCount;
+             noNameCell.appendChild(indexInputCell);
+
+             //1
+             var checkBoxInputCell = document.createElement("input"); 
+             checkBoxInputCell.type = "checkbox";
+             checkBoxInputCell.name = "Product["+modelCount+"].isChecked";
+             checkBoxInputCell.id = "checkBox";
+             checkBoxInputCell.className = "form-check-input";
+             checkBoxInputCell.setAttribute("onchange", "showDeleteBtn()");
+             noNameCell.appendChild(checkBoxInputCell);
+
+             //2
+             var nameCell = document.createElement("td");
+             var nameInputCell = document.createElement("input");
+             nameInputCell.type = "text";
+             nameInputCell.name = "Product["+modelCount+"].Name";
+             nameCell.appendChild(nameInputCell);
+
+             //3
+             var typeCell = document.createElement("td");
+             var typeInputCell = document.createElement("input");
+             typeInputCell.type = "text";
+              typeInputCell.name = "Product["+modelCount+"].Type";
+               typeCell.appendChild(typeInputCell);
+
+              //4
+             var priceCell = document.createElement("td");
+             var priceInputCell = document.createElement("input");
+             priceInputCell.type = "number";
+             priceInputCell.name = "Product["+modelCount+"].Price";
+             priceCell.appendChild(priceInputCell);
+
+             //5
+             var actionCell = document.createElement("td");
+             var deleteBtn = document.createElement("button");
+             deleteBtn.textContent ="Delete";
+             deleteBtn.className = "btn btn-danger";
+             deleteBtn.setAttribute("onclick", "deleteRow(" + modelCount + ")");
+             actionCell.appendChild(deleteBtn);
+
+             newRow.appendChild(noNameCell);
+             newRow.appendChild(nameCell);
+             newRow.appendChild(typeCell);
+             newRow.appendChild(priceCell);
+             newRow.appendChild(actionCell);
+
+             var tableBody = document.getElementById("tableBody");
+             tableBody.appendChild(newRow);
+             modelCount++;
+        }
+        function deleteRow(x){
+            document.getElementById('row_'+x).remove();
+        }
+
+</script> 
